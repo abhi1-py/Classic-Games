@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classic Mini Games</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        .game-area {
+            margin-top: 2em;
+        }
+
+        .btn {
+            background: #0f0;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #0f0;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #1f1;
+            box-shadow: 0 0 20px #1f1;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(20, 20px);
+            gap: 1px;
+            justify-content: center;
+            margin: auto;
+            max-width: 100%;
+            width: 400px;
+            height: 400px;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            background: #333;
+        }
+
+        .snake {
+            background: lime;
+        }
+
+        .food {
+            background: red;
+        }
+
+        #score {
+            font-size: 18px;
+            margin-top: 17px;
+            color: #0f0;
+        }
+
+        .tic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .tic-cell {
+            background: #222;
+            font-size: 2.5em;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        canvas {
+            background: #111;
+            display: block;
+            margin: auto;
+            border: 2px solid #0f0;
+        }
+
+        #tetris {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #tetris-board {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            gap: 1px;
+            margin: 0 auto 10px;
+        }
+
+        .tetris-cell {
+            width: 30px;
+            height: 18px;
+            background: #111;
+        }
+
+        .filled {
+            background: lime;
+        }
+
+
+        .filled {
+            background: lime;
+        }
+
+
+        #game-2048 {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 40px;
+        }
+
+        .board-2048 {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            grid-template-rows: repeat(4, 80px);
+            gap: 5px;
+            background: #111;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .tile {
+            width: 80px;
+            height: 80px;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .tile[data-val="2"] {
+            background: #eee4da;
+            color: #776e65;
+        }
+
+        .tile[data-val="4"] {
+            background: #ede0c8;
+            color: #776e65;
+        }
+
+        .tile[data-val="8"] {
+            background: #f2b179;
+            color: #fff;
+        }
+
+        .tile[data-val="16"] {
+            background: #f59563;
+            color: #fff;
+        }
+
+        .tile[data-val="32"] {
+            background: #f67c5f;
+            color: #fff;
+        }
+
+        .tile[data-val="64"] {
+            background: #f65e3b;
+            color: #fff;
+        }
+
+        .tile[data-val="128"] {
+            background: #edcf72;
+            color: #fff;
+        }
+
+        .tile[data-val="256"] {
+            background: #edcc61;
+            color: #fff;
+        }
+
+        .tile[data-val="512"] {
+            background: #edc850;
+            color: #fff;
+        }
+
+        .tile[data-val="1024"] {
+            background: #edc53f;
+            color: #fff;
+        }
+
+        .tile[data-val="2048"] {
+            background: #edc22e;
+            color: #fff;
+        }
+
+        #game-2048-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+
+        .instructions-2048,
+        .instructions-snake,
+        .instructions-tic,
+        .instructions-pong,
+        .instructions-tetris {
+            color: #0f0;
+            font-size: 16px;
+            text-align: left;
+            max-width: 300px;
+            padding: 1em;
+        }
+
+        /* Existing styles ... */
+
+        #snake-container,
+        #tic-container,
+        #pong-container,
+        #tetris-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="home" class="game-area">
+        <h1>🎮 Welcome to Classic Mini Games</h1>
+        <p>Select a game to begin:</p>
+        <div style="margin-top: 20px;">
+            <button class="btn" onclick="showGame('snake')">🐍 Play Snake</button>
+            <button class="btn" onclick="showGame('tic')">❌⭕ Play Tic Tac Toe</button>
+            <button class="btn" onclick="showGame('pong')">🎾 Play Pong</button>
+            <button class="btn" onclick="showGame('tetris')">🧱 Play Tetris</button>
+            <button class="btn" onclick="showGame('game-2048')">🧮 Play 2048</button>
+        </div>
+    </div>
+
+    <div id="snake" class="game-area" style="display:none;">
+        <h2>🐍 Snake Game</h2>
+        <div id="snake-container">
+            <div>
+                <div id="snake-board" class="board"></div>
+                <div id="score">Score: 0</div>
+            </div>
+            <div class="instructions-snake">
+                <h3>How to Play</h3>
+                <p>⬅⬆➡⬇ Use arrow keys to move the snake.</p>
+                <p>🍎 Eat red squares (food) to grow.</p>
+                <p>💀 Avoid hitting yourself.</p>
+                <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tic" class="game-area" style="display:none;">
+        <h2>❌⭕ Tic Tac Toe</h2>
+        <div id="tic-container">
+            <div>
+                <div id="tic-board" class="tic-grid"></div>
+                <div id="tic-status"></div>
+            </div>
+            <div class="instructions-tic">
+                <h3>How to Play</h3>
+                <p>👆 Click on a cell to mark X or O.</p>
+                <p>🎯 Get 3 in a row to win.</p>
+                <p>🤝 Take turns with another player.</p>
+                <button class="btn" onclick="resetTicTacToe()">🔁 Restart</button>
+                <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pong" class="game-area" style="display:none;">
+        <h2>🎾 Pong Game</h2>
+        <div id="pong-container">
+            <canvas id="pongCanvas" width="400" height="300"></canvas>
+            <div class="instructions-pong">
+                <h3>How to Play</h3>
+                <p>🖱 Move your mouse up/down to control the paddle.</p>
+                <p>🏓 Hit the ball and prevent it from passing your paddle.</p>
+                <p>🖱 Click canvas to start.</p>
+                <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tetris" class="game-area" style="display:none;">
+        <h2>🧱 Tetris</h2>
+        <div id="tetris-container">
+            <div>
+                <div id="tetris-board"></div>
+            </div>
+            <div class="instructions-tetris">
+                <h3>How to Play</h3>
+                <p>⬅➡ Move blocks sideways</p>
+                <p>⬇ Drop block faster</p>
+                <p>⬆ Rotate block</p>
+                <p>❌ Game over if blocks stack up</p>
+                <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="game-2048" class="game-area" style="display:none;">
+        <h2>🧮 2048 Game</h2>
+        <div id="score-2048">Score: 0</div>
+        <div id="game-2048-container">
+            <div class="board-2048" id="board-2048"></div>
+            <div class="instructions-2048">
+                <h3>How to Play</h3>
+                <p>➡ Use arrow keys (← ↑ → ↓) to move tiles.</p>
+                <p>🔢 Tiles with the same number merge when they touch.</p>
+                <p>🎯 Reach the 2048 tile to win!</p>
+                <button class="btn" onclick="reset2048()">🔄 Restart</button>
+                <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        function showGame(id) {
+            document.querySelectorAll('.game-area').forEach(div => div.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        // Snake Game
+        const size = 20;
+        const snakeBoard = document.getElementById('snake-board');
+        const scoreDisplay = document.getElementById('score');
+        let snake = [[5, 5]];
+        let dir = [0, 1];
+        let food = [3, 3];
+        let score = 0;
+        for (let i = 0; i < size * size; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            snakeBoard.appendChild(cell);
+        }
+        const snakeCells = snakeBoard.querySelectorAll('.cell');
+        function drawSnakeBoard() {
+            snakeCells.forEach(c => c.className = 'cell');
+            snake.forEach(([x, y]) => {
+                const idx = x * size + y;
+                if (idx >= 0 && idx < snakeCells.length) snakeCells[idx].classList.add('snake');
+            });
+            const foodIdx = food[0] * size + food[1];
+            snakeCells[foodIdx].classList.add('food');
+        }
+        function moveSnake() {
+            const [hx, hy] = snake[0];
+            const [dx, dy] = dir;
+            const newHead = [(hx + dx + size) % size, (hy + dy + size) % size];
+            if (snake.some(([x, y]) => x === newHead[0] && y === newHead[1])) {
+                alert("💀 Game Over! Your Score: " + score);
+                snake = [[5, 5]];
+                food = generateFood();
+                dir = [0, 1];
+                score = 0;
+            } else {
+                snake.unshift(newHead);
+                if (newHead[0] === food[0] && newHead[1] === food[1]) {
+                    food = generateFood();
+                    score++;
+                } else {
+                    snake.pop();
+                }
+            }
+            drawSnakeBoard();
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+        function generateFood() {
+            let newFood;
+            do {
+                newFood = [Math.floor(Math.random() * size), Math.floor(Math.random() * size)];
+            } while (snake.some(([x, y]) => x === newFood[0] && y === newFood[1]));
+            return newFood;
+        }
+        window.addEventListener('keydown', e => {
+            if (e.key === 'ArrowUp' && dir[0] !== 1) dir = [-1, 0];
+            if (e.key === 'ArrowDown' && dir[0] !== -1) dir = [1, 0];
+            if (e.key === 'ArrowLeft' && dir[1] !== 1) dir = [0, -1];
+            if (e.key === 'ArrowRight' && dir[1] !== -1) dir = [0, 1];
+        });
+        setInterval(moveSnake, 300);
+        drawSnakeBoard();
+
+        // Tic Tac Toe
+        const ticGrid = document.getElementById('tic-board');
+        const statusDiv = document.getElementById('tic-status');
+        let ticState = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameOver = false;
+        const winCombos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        function drawTicTacToe() {
+            ticGrid.innerHTML = '';
+            ticState.forEach((val, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'tic-cell';
+                cell.textContent = val || '';
+                cell.onclick = () => handleTicClick(i);
+                ticGrid.appendChild(cell);
+            });
+        }
+        function handleTicClick(i) {
+            if (!ticState[i] && !gameOver) {
+                ticState[i] = currentPlayer;
+                if (checkWinner(currentPlayer)) {
+                    statusDiv.textContent = `🏆 Player ${currentPlayer} wins!`;
+                    gameOver = true;
+                } else if (ticState.every(v => v)) {
+                    statusDiv.textContent = "It's a draw!";
+                    gameOver = true;
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    statusDiv.textContent = `Player ${currentPlayer}'s turn`;
+                }
+                drawTicTacToe();
+            }
+        }
+        function checkWinner(player) {
+            return winCombos.some(combo => combo.every(i => ticState[i] === player));
+        }
+        function resetTicTacToe() {
+            ticState = Array(9).fill(null);
+            currentPlayer = 'X';
+            gameOver = false;
+            statusDiv.textContent = `Player ${currentPlayer}'s turn`;
+            drawTicTacToe();
+        }
+        resetTicTacToe();
+
+        // 🎾 Pong Game Logic (Fixed Speed Reset)
+        const pongCanvas = document.getElementById("pongCanvas");
+        const ctx = pongCanvas.getContext("2d");
+
+        let paddleHeight = 80;
+        let paddleWidth = 10;
+        let playerY = pongCanvas.height / 2 - paddleHeight / 2;
+        let aiY = pongCanvas.height / 2 - paddleHeight / 2;
+
+        const INITIAL_SPEED_X = 4;
+        const INITIAL_SPEED_Y = 3;
+
+        let ballX, ballY, ballSpeedX, ballSpeedY;
+        let pongScore = 0;
+        let pongRunning = false;
+        let frameId = null;
+
+        function resetBallAndSpeed() {
+            ballX = pongCanvas.width / 2;
+            ballY = pongCanvas.height / 2;
+            ballSpeedX = INITIAL_SPEED_X;
+            ballSpeedY = INITIAL_SPEED_Y;
+        }
+
+        function resetPongGame(message) {
+            pongRunning = false;
+            cancelAnimationFrame(frameId); // 🛑 Stop the loop
+            alert(`${message} Final Score: ${pongScore}`);
+            pongScore = 0;
+            resetBallAndSpeed();
+            drawPong();
+        }
+
+        function drawRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, w, h);
+        }
+
+        function drawCircle(x, y, r, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2, false);
+            ctx.fill();
+        }
+
+        function drawPong() {
+            drawRect(0, 0, pongCanvas.width, pongCanvas.height, "#111");
+            drawRect(0, playerY, paddleWidth, paddleHeight, "#0f0");
+            drawRect(pongCanvas.width - paddleWidth, aiY, paddleWidth, paddleHeight, "#0f0");
+            drawCircle(ballX, ballY, 10, "lime");
+
+            ctx.font = "20px Courier New";
+            ctx.fillStyle = "#0f0";
+            ctx.fillText("Score: " + pongScore, 10, 20);
+        }
+
+        function movePong() {
+            if (!pongRunning) return;
+
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY < 0 || ballY > pongCanvas.height) ballSpeedY = -ballSpeedY;
+
+            // AI Paddle
+            const aiCenter = aiY + paddleHeight / 2;
+            if (aiCenter < ballY - 30) aiY += 5;
+            else if (aiCenter > ballY + 30) aiY -= 5;
+
+            // Player Paddle
+            if (
+                ballX < paddleWidth &&
+                ballY > playerY &&
+                ballY < playerY + paddleHeight
+            ) {
+                ballSpeedX = -ballSpeedX;
+                pongScore++;
+                if (pongScore % 5 === 0) {
+                    ballSpeedX *= 1.1;
+                    ballSpeedY *= 1.1;
+                }
+            }
+
+            // AI Paddle Bounce
+            if (
+                ballX > pongCanvas.width - paddleWidth &&
+                ballY > aiY &&
+                ballY < aiY + paddleHeight
+            ) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            if (ballX < 0 || ballX > pongCanvas.width) {
+                resetPongGame("💥 Game Over!");
+                return;
+            }
+
+            drawPong();
+            frameId = requestAnimationFrame(movePong);
+        }
+
+        pongCanvas.addEventListener("mousemove", function (e) {
+            const rect = pongCanvas.getBoundingClientRect();
+            playerY = e.clientY - rect.top - paddleHeight / 2;
+        });
+
+        pongCanvas.addEventListener("click", function () {
+            if (!pongRunning) {
+                resetBallAndSpeed(); // ✅ Reset ball position and speed
+                pongRunning = true;
+                frameId = requestAnimationFrame(movePong);
+            }
+        });
+
+
+
+        // Tetris Game Logic
+        const tetrisBoard = document.getElementById("tetris-board");
+        let tetrisGrid = Array.from({ length: 20 }, () => Array(10).fill(0));
+        let tetrisScore = 0;
+        const tetrisShapes = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[0, 1, 0], [1, 1, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]]
+        ];
+        let currentPiece = { x: 3, y: 0, shape: tetrisShapes[0] };
+
+        function drawTetris() {
+            tetrisBoard.innerHTML = '';
+            for (let row = 0; row < 20; row++) {
+                for (let col = 0; col < 10; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'tetris-cell';
+                    if (tetrisGrid[row][col]) cell.classList.add('filled');
+                    if (isInPiece(col, row)) cell.classList.add('filled');
+                    tetrisBoard.appendChild(cell);
+                }
+            }
+            document.getElementById("tetris-score").textContent = `Score: ${tetrisScore}`;
+        }
+
+        function isInPiece(x, y) {
+            return currentPiece.shape.some((row, i) =>
+                row.some((val, j) => val && currentPiece.x + j === x && currentPiece.y + i === y)
+            );
+        }
+
+        function dropTetris() {
+            currentPiece.y++;
+            if (collides()) {
+                currentPiece.y--;
+                merge();
+                clearLines();
+                spawnPiece();
+            }
+            drawTetris();
+        }
+
+        function collides() {
+            return currentPiece.shape.some((row, i) =>
+                row.some((val, j) => {
+                    if (!val) return false;
+                    const x = currentPiece.x + j;
+                    const y = currentPiece.y + i;
+                    return x < 0 || x >= 10 || y >= 20 || tetrisGrid[y][x];
+                })
+            );
+        }
+
+        function merge() {
+            currentPiece.shape.forEach((row, i) => {
+                row.forEach((val, j) => {
+                    if (val) tetrisGrid[currentPiece.y + i][currentPiece.x + j] = 1;
+                });
+            });
+        }
+
+        function clearLines() {
+            tetrisGrid = tetrisGrid.filter(row => {
+                if (row.every(cell => cell)) {
+                    tetrisScore += 100;
+                    return false;
+                }
+                return true;
+            });
+            while (tetrisGrid.length < 20) tetrisGrid.unshift(Array(10).fill(0));
+        }
+
+        function spawnPiece() {
+            currentPiece = { x: 3, y: 0, shape: tetrisShapes[Math.floor(Math.random() * tetrisShapes.length)] };
+            if (collides()) {
+                alert("💥 Tetris Game Over! Score: " + tetrisScore);
+                tetrisGrid = Array.from({ length: 20 }, () => Array(10).fill(0));
+                tetrisScore = 0;
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('tetris').style.display !== 'none') {
+                if (e.key === 'ArrowLeft') {
+                    currentPiece.x--;
+                    if (collides()) currentPiece.x++; // Revert if out of bounds or hits blocks
+                }
+                if (e.key === 'ArrowRight') {
+                    currentPiece.x++;
+                    if (collides()) currentPiece.x--; // Revert if out of bounds or hits blocks
+                }
+                if (e.key === 'ArrowDown') {
+                    dropTetris(); // Drop one step
+                }
+                if (e.key === 'ArrowUp') {
+                    rotate(); // Try rotating the piece
+                }
+                drawTetris(); // Re-render the board
+            }
+        });
+
+        function rotate() {
+            // Rotate the piece clockwise
+            const newShape = currentPiece.shape[0].map((_, i) =>
+                currentPiece.shape.map(row => row[i])
+            ).reverse();
+
+            const oldShape = currentPiece.shape;
+            currentPiece.shape = newShape;
+
+            // Revert rotation if it causes collision
+            if (collides()) {
+                currentPiece.shape = oldShape;
+            }
+        }
+
+
+        setInterval(() => {
+            if (document.getElementById('tetris').style.display !== 'none') {
+                dropTetris();
+            }
+        }, 500);
+
+        spawnPiece();
+
+
+
+
+        function showGame(id) {
+            document.querySelectorAll('.game-area').forEach(div => div.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            if (id === 'game-2048') {
+                drawBoard2048();
+            }
+        }
+
+        // 2048 Game Logic
+        const boardElement = document.getElementById("board-2048");
+        let board2048 = Array(4).fill(null).map(() => Array(4).fill(0));
+        let score2048 = 0;
+
+        function reset2048() {
+            board2048 = Array(4).fill(null).map(() => Array(4).fill(0));
+            score2048 = 0;
+            addRandomTile();
+            addRandomTile();
+            drawBoard2048();
+        }
+
+        function addRandomTile() {
+            let empty = [];
+            board2048.forEach((row, i) => row.forEach((val, j) => {
+                if (val === 0) empty.push([i, j]);
+            }));
+            if (empty.length) {
+                let [i, j] = empty[Math.floor(Math.random() * empty.length)];
+                board2048[i][j] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function drawBoard2048() {
+            boardElement.innerHTML = '';
+            board2048.forEach(row => {
+                row.forEach(val => {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    if (val) {
+                        tile.setAttribute('data-val', val);
+                        tile.textContent = val;
+                    }
+                    boardElement.appendChild(tile);
+                });
+            });
+            document.getElementById("score-2048").textContent = "Score: " + score2048;
+        }
+
+        function moveLeft() {
+            let moved = false;
+            for (let i = 0; i < 4; i++) {
+                let row = board2048[i].filter(val => val);
+                for (let j = 0; j < row.length - 1; j++) {
+                    if (row[j] === row[j + 1]) {
+                        row[j] *= 2;
+                        score2048 += row[j];
+                        row.splice(j + 1, 1);
+                    }
+                }
+                while (row.length < 4) row.push(0);
+                if (row.toString() !== board2048[i].toString()) moved = true;
+                board2048[i] = row;
+            }
+            return moved;
+        }
+
+        function rotateMatrixRight(matrix) {
+            return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
+        }
+
+        function rotateMatrixLeft(matrix) {
+            return matrix[0].map((_, i) => matrix.map(row => row[3 - i]));
+        }
+
+        document.addEventListener('keydown', e => {
+            let moved = false;
+            if (document.getElementById('game-2048').style.display !== 'none') {
+                if (e.key === 'ArrowLeft') moved = moveLeft();
+                else if (e.key === 'ArrowRight') {
+                    board2048 = board2048.map(row => row.reverse());
+                    moved = moveLeft();
+                    board2048 = board2048.map(row => row.reverse());
+                } else if (e.key === 'ArrowUp') {
+                    board2048 = rotateMatrixLeft(board2048);
+                    moved = moveLeft();
+                    board2048 = rotateMatrixRight(board2048);
+                } else if (e.key === 'ArrowDown') {
+                    board2048 = rotateMatrixRight(board2048);
+                    moved = moveLeft();
+                    board2048 = rotateMatrixLeft(board2048);
+                }
+                if (moved) {
+                    addRandomTile();
+                    drawBoard2048();
+                }
+            }
+        });
+
+        reset2048();
+    </script>
+</body>
+
+</html>
