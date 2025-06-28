@@ -250,6 +250,31 @@
             padding: 20px;
             flex-wrap: wrap;
         }
+
+
+        canvas {
+            background: #111;
+            display: block;
+            margin: auto;
+            border: 2px solid #0f0;
+        }
+
+        .instructions-breaker {
+            color: #0f0;
+            font-size: 16px;
+            text-align: left;
+            max-width: 300px;
+            padding: 1em;
+        }
+
+        #breaker-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 
@@ -263,6 +288,8 @@
             <button class="btn" onclick="showGame('pong')">🎾 Play Pong</button>
             <button class="btn" onclick="showGame('tetris')">🧱 Play Tetris</button>
             <button class="btn" onclick="showGame('game-2048')">🧮 Play 2048</button>
+            <button class="btn" onclick="showGame('breaker')">🧱 Play Brick Breaker</button>
+
         </div>
     </div>
 
@@ -344,6 +371,20 @@
                 <p>🔢 Tiles with the same number merge when they touch.</p>
                 <p>🎯 Reach the 2048 tile to win!</p>
                 <button class="btn" onclick="reset2048()">🔄 Restart</button>
+                <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="breaker" class="game-area" style="display:none;">
+        <h2>🧱 Brick Breaker</h2>
+        <div id="breaker-container">
+            <canvas id="breakerCanvas" width="480" height="320"></canvas>
+            <div class="instructions-breaker">
+                <h3>How to Play</h3>
+                <p>⬅ ➡ Use Left/Right arrow keys to move the paddle.</p>
+                <p>💣 Break all the bricks with the ball to win.</p>
+                <p>🏐 Don’t let the ball fall!</p>
                 <button class="btn" onclick="showGame('home')">🔙 Back to Menu</button>
             </div>
         </div>
@@ -811,6 +852,157 @@
         });
 
         reset2048();
+
+
+
+        function showGame(id) {
+            document.querySelectorAll('.game-area').forEach(div => div.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+
+            if (id === 'breaker') {
+                requestAnimationFrame(drawBreaker); // 🔁 Start game loop only when Brick Breaker is shown
+            }
+
+        }
+
+        // Brick Breaker Logic
+        const breakerCanvas = document.getElementById("breakerCanvas");
+        const bctx = breakerCanvas.getContext("2d");
+
+        let bx = breakerCanvas.width / 2;
+        let by = breakerCanvas.height - 30;
+        let bdx = 2;
+        let bdy = -2;
+        let bPaddleHeight = 10;
+        let bPaddleWidth = 75;
+        let bPaddleX = (breakerCanvas.width - bPaddleWidth) / 2;
+        let bRightPressed = false;
+        let bLeftPressed = false;
+        let bBallRadius = 10;
+
+        const bRowCount = 3;
+        const bColCount = 5;
+        const bBrickWidth = 75;
+        const bBrickHeight = 20;
+        const bBrickPadding = 10;
+        const bBrickOffsetTop = 30;
+        const bBrickOffsetLeft = 30;
+
+        let bBricks = [];
+        for (let c = 0; c < bColCount; c++) {
+            bBricks[c] = [];
+            for (let r = 0; r < bRowCount; r++) {
+                bBricks[c][r] = { x: 0, y: 0, status: 1 };
+            }
+        }
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "Right" || e.key === "ArrowRight") bRightPressed = true;
+            if (e.key === "Left" || e.key === "ArrowLeft") bLeftPressed = true;
+        });
+
+        document.addEventListener("keyup", e => {
+            if (e.key === "Right" || e.key === "ArrowRight") bRightPressed = false;
+            if (e.key === "Left" || e.key === "ArrowLeft") bLeftPressed = false;
+        });
+
+        function drawBreakerBall() {
+            bctx.beginPath();
+            bctx.arc(bx, by, bBallRadius, 0, Math.PI * 2);
+            bctx.fillStyle = "lime";
+            bctx.fill();
+            bctx.closePath();
+        }
+
+        function drawBreakerPaddle() {
+            bctx.beginPath();
+            bctx.rect(bPaddleX, breakerCanvas.height - bPaddleHeight, bPaddleWidth, bPaddleHeight);
+            bctx.fillStyle = "#0f0";
+            bctx.fill();
+            bctx.closePath();
+        }
+
+        function drawBricks() {
+            for (let c = 0; c < bColCount; c++) {
+                for (let r = 0; r < bRowCount; r++) {
+                    if (bBricks[c][r].status === 1) {
+                        let brickX = c * (bBrickWidth + bBrickPadding) + bBrickOffsetLeft;
+                        let brickY = r * (bBrickHeight + bBrickPadding) + bBrickOffsetTop;
+                        bBricks[c][r].x = brickX;
+                        bBricks[c][r].y = brickY;
+                        bctx.beginPath();
+                        bctx.rect(brickX, brickY, bBrickWidth, bBrickHeight);
+                        bctx.fillStyle = "lime";
+                        bctx.fill();
+                        bctx.closePath();
+                    }
+                }
+            }
+        }
+
+        function collisionDetection() {
+            for (let c = 0; c < bColCount; c++) {
+                for (let r = 0; r < bRowCount; r++) {
+                    let b = bBricks[c][r];
+                    if (b.status === 1) {
+                        if (bx > b.x && bx < b.x + bBrickWidth && by > b.y && by < b.y + bBrickHeight) {
+                            bdy = -bdy;
+                            b.status = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawBreaker() {
+            if (document.getElementById('breaker').style.display === 'none') return;
+            bctx.clearRect(0, 0, breakerCanvas.width, breakerCanvas.height);
+            drawBricks();
+            drawBreakerBall();
+            drawBreakerPaddle();
+            collisionDetection();
+
+            if (bx + bdx > breakerCanvas.width - bBallRadius || bx + bdx < bBallRadius) bdx = -bdx;
+            if (by + bdy < bBallRadius) bdy = -bdy;
+            else if (by + bdy > breakerCanvas.height - bBallRadius) {
+                if (bx > bPaddleX && bx < bPaddleX + bPaddleWidth) {
+                    bdy = -bdy;
+                } else {
+                    alert("💥 Game Over!");
+                    resetBreakerGame();
+                    return; // Stop the current animation frame
+                }
+            }
+
+            if (bRightPressed && bPaddleX < breakerCanvas.width - bPaddleWidth) bPaddleX += 7;
+            else if (bLeftPressed && bPaddleX > 0) bPaddleX -= 7;
+
+            bx += bdx;
+            by += bdy;
+            requestAnimationFrame(drawBreaker);
+        }
+
+        function resetBreakerGame() {
+            // Reset ball position
+            bx = breakerCanvas.width / 2;
+            by = breakerCanvas.height - 30;
+            bdx = 2;
+            bdy = -2;
+
+            // Reset paddle
+            bPaddleX = (breakerCanvas.width - bPaddleWidth) / 2;
+
+            // Reset bricks
+            for (let c = 0; c < bColCount; c++) {
+                for (let r = 0; r < bRowCount; r++) {
+                    bBricks[c][r].status = 1;
+                }
+            }
+
+            // Start new game
+            requestAnimationFrame(drawBreaker);
+        }
+
     </script>
 </body>
 
